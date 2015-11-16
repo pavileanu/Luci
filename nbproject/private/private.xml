@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/C:/Users/pavileanu/Documents/NetBeansProjects/luci2/src/proiect1/filesystem/PhileNotOpenException.java</file>
+            <file>file:/C:/Users/pavileanu/Documents/NetBeansProjects/luci2/src/proiect1/filesystem/DiskFullException.java</file>
+            <file>file:/C:/Users/pavileanu/Documents/NetBeansProjects/luci2/src/proiect1/filesystem/DiskInterface.java</file>
+            <file>file:/C:/Users/pavileanu/Documents/NetBeansProjects/luci2/src/proiect1/filesystem/Disk.java</file>
+            <file>file:/C:/Users/pavileanu/Documents/NetBeansProjects/luci2/src/luci2/Luci2.java</file>
+            <file>file:/C:/Users/pavileanu/Documents/NetBeansProjects/luci2/src/Console.java</file>
+            <file>file:/C:/Users/pavileanu/Documents/NetBeansProjects/luci2/src/proiect1/filesystem/PhileAlreadyExistsException.java</file>
+            <file>file:/C:/Users/pavileanu/Documents/NetBeansProjects/luci2/src/proiect1/filesystem/PhileNotFoundException.java</file>
+            <file>file:/C:/Users/pavileanu/Documents/NetBeansProjects/luci2/src/proiect1/filesystem/PhileInterface.java</file>
+            <file>file:/C:/Users/pavileanu/Documents/NetBeansProjects/luci2/src/proiect1/filesystem/BadBlockException.java</file>
+        </group>
+    </open-files>
+</project-private>
