@@ -1,12 +1,16 @@
 package proiect1.filesystem;
 
 public class Disk implements DiskInterface {
+
     public byte[][] disk;
     private int diskSize;
+    private final int rootBegin;
+    private final int fatBegin = 1;
 
     public Disk( int diskSize) {
 	this.diskSize = diskSize; 
 	disk = new byte[diskSize][];
+        rootBegin = 7/10 * diskSize;
     }
     
     public void format() {disk = new byte[diskSize][];}

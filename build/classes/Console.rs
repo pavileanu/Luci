@@ -1,3 +1,0 @@
-Phile
-Console
-Edit

@@ -1,20 +1,88 @@
 import proiect1.filesystem.*;
 import java.io.*;
 import java.awt.*;
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.util.Scanner;
 
 public class Console extends Frame implements FileSystem{
 	static final int BLOCK_SIZE = 1024;		// [bytes]
 	static final int ROOT_ENTRY_LENGTH = 32;	// [bytes]
 	static final byte DESCRIPTOR = (byte)0;		// usual: F6 HEX
+        
+        static String currentDiskPath;
+        static String currentPath = "$: ";
 
-	
-public static void main(String[]args){}	
+        
+public static void addDiskRefernce(String output){
+    
+    BufferedWriter  writer = null;
+    try {
+        //writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("log.txt")));
+        writer = new BufferedWriter(new FileWriter("disks.txt",true));
+        writer.write(output + "\n");
+    } catch (IOException ex) {
+        // report
+    } finally {
+        try {
+            writer.close();
+        } catch (Exception ex) {/*ignore*/
+            ex.printStackTrace();
+        }
+    }
+}
+
+public static void runtimeCall(String command, Console c){
+    try{
+    String[] arguments = command.split("\\s+");
+    String returnVal;
+    Method m = Console.class.getMethod(arguments[0], String.class);
+    returnVal = (String) m.invoke(c, arguments[1]);
+    }
+    catch(Exception e)
+    {
+        e.printStackTrace();
+    }
+}
+
+public void takePath(){
+    System.out.print(currentPath+": ");
+}
+
+public static void main(String[]args){
+   
+    System.out.print(currentPath);
+    Console c = new Console();
+    Scanner sc = new Scanner(System.in);
+    String input;
+    while(true){
+      input = sc.nextLine();
+      if(input.equals("exit"))
+        {
+          System.out.println("Consola a fost inchisa!"); 
+          break; 
+        }
+      runtimeCall(input, c);
+    }
+    
+    
+    
+    /*c.newDisk("Root3");
+    //c.allDisks();
+    c.load("Root2");
+    runtimeCall("chdir a", c);
+    
+    //c.chdir("a");
+    //c.chdir("adwa");
+    //c.mkdir("b");
+    //c.mkfile("fisier");
+    System.out.println(currentPath);*/
+}	
 
 //mesajele afisate la lansarea in executie a simulatorului
-void copyright(){}
+public void copyright(){}
 
 //constructor; trebuie sa permita lansarea comenzilor new (pentru un nou sistem) sau load (pentru incarcarea unui sistem existent pe HDD)		
 Console(){}
@@ -58,21 +126,95 @@ exec (lanseaza in executie un fisier de pe HDD)
 save x (salveaza fisierul cu numele (sau calea) x pe HDD)
 lf (incarca un fisier de pe HDD in diskul virtual)
 */
-void shell(){}
+public void shell(){}
 
 //====================COMMANDS========================//]
 
 //creaza un nou disk si un nou sistem de fisiere pe acesta
-void newDisk(){}
+public void newDisk(String diskName){
+    try
+    {
+        File newDisk = new File(System.getProperty("user.dir").toString() + "/" + diskName);
+        if (newDisk.exists()) {
+            System.out.println("Unable to create " + newDisk.getAbsolutePath());
+        }
+        else {
+            newDisk.mkdirs();
+            System.out.println("New disk created:" + diskName);
+            addDiskRefernce(diskName);
+            currentDiskPath = System.getProperty("user.dir").toString() + "\\" + diskName;
+            currentPath = currentDiskPath;
+        }
+    }
+    finally{
+       takePath();
+    }
+ }
+
+public void allDisks(){
+    try{
+        System.out.println("Discurile existente in sistem:");
+        String line; 
+        int i=0;
+        BufferedReader br = new BufferedReader(new FileReader("disks.txt"));
+        while ((line = br.readLine()) != null) {
+            i++;
+            System.out.println("" + i + ":" + line);
+        }
+    }
+    catch(Exception e){
+    }
+    finally{
+       takePath();
+    }
+}
 
 //incarca un disk existent de pe HDD; trebuie folosit un obiect de tip FileDialog
-void load(){}
+public void load(String diskName){
+    try{
+        String line; boolean ok=false;
+        BufferedReader br = new BufferedReader(new FileReader("disks.txt"));
+        while ((line = br.readLine()) != null) {
+            if(line.equals(diskName))
+                ok=true;
+        }
+        if(ok==true)
+        {   
+            System.out.println("Discul " + diskName + " a fost incarcat");
+            currentDiskPath = System.getProperty("user.dir").toString() + "\\" + diskName;
+            currentPath = currentDiskPath;
+        }
+        else System.out.println("Discul nu exista!");
+    }
+    catch(Exception e){
+    }
+    finally{
+       takePath();
+    }
+}
 
 //formateaza un disk
 public void format(DiskInterface disk){}
 
 //inchide sistemul de fisiere
 public void shutdown(){}
+
+public void mkdir(String newDirectoryName){
+    try
+    {
+        File newDirectory = new File(currentPath + "\\" + newDirectoryName);
+        if (newDirectory.exists()) {
+            System.out.println("Unable to create " + newDirectory.getAbsolutePath());
+        }
+        else {
+            newDirectory.mkdir();
+            System.out.println("Directory" + newDirectoryName + "created");
+        }
+    }
+    finally{
+       takePath();
+    }
+}
 
 /*
 salveaza diskul pe HDD (primii 4 octeteti vor contine semnatura de disk (la alegere) (aceasta semnatura trebuie verifica 
@@ -83,7 +225,26 @@ de blocuri))
 void save() {}
 
 //creaza si deschide fisierul cu numele specificat
-void mkfile(String name){}
+public void mkfile(String fileName){
+    try
+    {
+        File newFile = new File(currentPath + "\\" + fileName + ".txt");
+        if (newFile.exists()) {
+            System.out.println("Unable to create " + newFile.getAbsolutePath());
+        }
+        else {
+            newFile.createNewFile();
+            System.out.println("Directory" + fileName + "created");
+        }
+    }
+    catch(Exception e){
+        e.printStackTrace();
+    }
+    
+    finally{
+       takePath();
+    }
+ }
 
 //copiaza frompath la topath
 void copy(String frompath, String topath) throws PhileNotFoundException{}
@@ -110,7 +271,9 @@ void close(String path){}
 void closeAll(){}
 
 //sterge un fisier/director cu numele name
-public void delete(String name) throws PhileNotFoundException{}
+public void delete(String name) throws PhileNotFoundException{
+        
+}
 
 //sterge continutul tuturor blocurilor din zona de date, care in FAT figureaza ca fiind sterse
 void clean(){}
@@ -119,7 +282,26 @@ void clean(){}
 void df(){}
 
 //schimba directorul curent
-void chdir (String path){}
+public void chdir(String path){
+    try{
+        File currentDirectory = new File(currentPath);
+        String[] allDirectories = currentDirectory.list();
+        boolean directoryExist = false;
+        for (String item : allDirectories) {
+            if(item.equals(path))
+            {
+                directoryExist = true;
+            }
+        }
+        if(directoryExist == true)
+            currentPath = currentPath + "\\" + path;
+        else
+            System.out.println("The directory doesn't exists");
+    }
+    finally{
+       takePath();
+    }
+}
 
 //listeaza continutul directorului curent (suporta 3 optiuni: -a, -l, -al)
 void ls(String param){}
@@ -438,110 +620,3 @@ String write_with_commas (int i)
 }
     
 }
-
-
-//==============================================================================//
-
-
-class Phile implements PhileInterface{
-	Console console;
-	Point entry;
-	int mode;
-	int position;
-	
-Phile(Console console, Point entry, int mode){
-	this.console = console;
-	this.entry = entry;
-	this.mode = mode;
-}
-
-//vezi PhileInterface
-public int read (byte buffer[], int readCount) throws proiect1.filesystem.IllegalAccessException
-{
-    return 0;
-}
-
-//vezi PhileInterface
-public int write (byte buffer[], int writeCount) throws proiect1.filesystem.IllegalAccessException, DiskFullException
-{
-    return 0;
-}
-
-//vezi PhileInterface
-public void seek (int position){}
-
-//vezi PhileInterface
-public int getSize()
-{
-    return 0;
-}
-
-//vezi PhileInterface
-public int getMode()
-{
-    return 0;
-}
-    
-}
-
-
-//==============================================================================//
-
-//fereastra de editare a fisierelor
-
-class Edit extends Frame{
-	TextArea text;
-	Console console;
-	Point PhileEntry;
-	Phile phile;
-	String name;
-	int index;
-	int mode;
-
-//constructor
-Edit(Console console, int index, int mode){}
-
-//adauga bara cu meniuri (aceasta va contine meniul File cu submeniurile Save si Exit pt modul edit si numai
-//meniul Exit, pt modul View)
-void addMenuBar(){}
-
-public boolean handleEvent(Event e)
-{
-    return true;
-}
-
-//scrie continutul fisierului in TextArea
-void load(){}
-
-//salveaza modificarile facute (sterge intreg continutul, seteaza position=0, scrie noul continut)
-void save(){}
-
-//folosita in save; scrie fisierul prin intermediul lui phile 
-void write(){}
-
-//folosita in save; sterge continutul fisierului inaintea salvarii
-void delete(Point EOF){}
-
-//inchide fereastra editorului (fara a se iesi din program)
-void close(){}
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
