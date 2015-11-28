@@ -17,7 +17,6 @@ public class Console extends Frame implements FileSystem{
 
         
 public static void addDiskRefernce(String output){
-    
     BufferedWriter  writer = null;
     try {
         //writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("log.txt")));
@@ -34,12 +33,31 @@ public static void addDiskRefernce(String output){
     }
 }
 
+public void abcd(String a, String b)
+{
+   System.out.println("test");
+}
+
+
 public static void runtimeCall(String command, Console c){
     try{
     String[] arguments = command.split("\\s+");
     String returnVal;
-    Method m = Console.class.getMethod(arguments[0], String.class);
-    returnVal = (String) m.invoke(c, arguments[1]);
+       
+    if(arguments.length == 2){
+        Method m = Console.class.getMethod(arguments[0], String.class);
+        returnVal = (String) m.invoke(c, arguments[1]);
+    }
+    else if(arguments.length == 1){
+        Method m = Console.class.getMethod(arguments[0]);
+        returnVal = (String) m.invoke(c);
+    }
+    else if(arguments.length == 3){
+        Class[] array={String.class, String.class};
+        Method m = Console.class.getMethod(arguments[0], array);
+        returnVal = (String) m.invoke(c, arguments[1], arguments[2]);
+    }
+    
     }
     catch(Exception e)
     {
@@ -59,6 +77,11 @@ public static void main(String[]args){
     String input;
     while(true){
       input = sc.nextLine();
+      if(input.equals(""))
+        { 
+            System.out.print(currentPath);
+            continue;  
+        }    
       if(input.equals("exit"))
         {
           System.out.println("Consola a fost inchisa!"); 
@@ -89,19 +112,19 @@ Console(){}
 
 /*
 shell este metoda ce asigura interactivitatea programului; trebuie sa implementeze comenzile: 
-new (creaza un nou sistem)
-load (incarca un sistem existent) 
-format (formateaza diskul)
-save (salveaza diskul pe HDD) 
-shutdown (inchide sistemul)
-mkdir (creaza un director)
-mkfile (creaza si deschide un fisier)
+new (creaza un nou sistem)                Facut
+load (incarca un sistem existent)         Facut
+format (formateaza diskul)                
+save (salveaza diskul pe HDD)           
+shutdown (inchide sistemul)               Facut
+mkdir (creaza un director)                Facut
+mkfile (creaza si deschide un fisier)     Facut
 copy (copiaza un fisier/director la o cale indicata)
-delete (sterge un fisier sau director) 
+delete (sterge un fisier sau director)    Facut
 move (muta un fisier/director la o cale indicata) 
 rename (schimba numele unui fisier/director) 
-cd / chdir (schimba directorul curent) 
-up (un director mai sus)
+cd / chdir (schimba directorul curent)    Facut
+up (un director mai sus)                
 ls (listeaza continutul directorului curent; optiunea -a afiseaza si fisierele/directoarele ascunse, optiunea -l afiseaza in format lung
 ([atribute nume <DIR> dimensiune data timpul], <DIR> apare numai la directoare, data si timpul se refera la momentul 
 la care a fost creat sau modificat(dupa prima modificare)), -al (format lung in care sunt afisate si fisierele/directoarele 
@@ -197,7 +220,10 @@ public void load(String diskName){
 public void format(DiskInterface disk){}
 
 //inchide sistemul de fisiere
-public void shutdown(){}
+public void shutdown(){
+    System.out.println("Consola a fost inchisa!");
+    System.exit(0);
+}
 
 public void mkdir(String newDirectoryName){
     try
