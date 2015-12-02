@@ -42,20 +42,20 @@ public void abcd(String a, String b)
 public static void runtimeCall(String command, Console c){
     try{
     String[] arguments = command.split("\\s+");
-    String returnVal;
+    
        
     if(arguments.length == 2){
         Method m = Console.class.getMethod(arguments[0], String.class);
-        returnVal = (String) m.invoke(c, arguments[1]);
+        m.invoke(c, arguments[1]);
     }
     else if(arguments.length == 1){
         Method m = Console.class.getMethod(arguments[0]);
-        returnVal = (String) m.invoke(c);
+        m.invoke(c);
     }
     else if(arguments.length == 3){
         Class[] array={String.class, String.class};
         Method m = Console.class.getMethod(arguments[0], array);
-        returnVal = (String) m.invoke(c, arguments[1], arguments[2]);
+        m.invoke(c, arguments[1], arguments[2]);
     }
     
     }
@@ -79,7 +79,7 @@ public static void main(String[]args){
       input = sc.nextLine();
       if(input.equals(""))
         { 
-            System.out.print(currentPath);
+            c.takePath();
             continue;  
         }    
       if(input.equals("exit"))
@@ -329,8 +329,35 @@ public void chdir(String path){
     }
 }
 
+//navigam up cu un director
+public void up(){
+    // Nu putem face up din disk
+    if(currentPath.equals(currentDiskPath))    
+        return;
+    int lastIndex = currentPath.lastIndexOf("\\");
+    currentPath = currentPath.substring(0, lastIndex
+    );
+    takePath();    
+}
+
+
+
 //listeaza continutul directorului curent (suporta 3 optiuni: -a, -l, -al)
-void ls(String param){}
+public void ls(String param){} // JAVA NO IMPLICIT PARAMETERS COMMON
+
+public void ls(){   // OVERLOADING :((((
+    File folder = new File(currentPath);
+    File[] listOfFiles = folder.listFiles();
+
+        for (int i = 0; i < listOfFiles.length; i++) {
+          if (listOfFiles[i].isFile()) {
+            System.out.println("File: " + listOfFiles[i].getName());
+          } else if (listOfFiles[i].isDirectory()) {
+            System.out.println("Directory: " + listOfFiles[i].getName());
+          }
+    }
+    takePath();
+}
 
 //afiseaza/seteaza atributele unui fisier/director
 void attr(String name){}
@@ -355,31 +382,103 @@ void loadFilefromHDD() throws DiskFullException{ }
 //================TEST FUNCTIONS===================//
 
 //returneaza true daca fisierul/directorul cu intrarea entry este Read-Only si false in caz contrar
-boolean isReadOnly(Point entry){ return true; }
+public boolean isReadOnly(String entry){
+        
+    try{
+            String targetPath = currentPath + "\\" + entry;
+            File file = new File(targetPath);
+            if(!file.exists())
+               System.out.println("Fisierul nu exista");          
+            if(!file.canWrite())
+            {
+                System.out.println(entry + " este Read Only");
+                return true;
+            }
+            else {
+                System.out.println(entry + " nu este Read Only");
+                return false;
+            }
+        }
+    catch(Exception e){
+        return false;
+    }
+    
+    finally{
+       takePath();
+    }
+  
+}
 
 //returneaza true daca fisierul/directorul cu intrarea entry este Hidden si false in caz contrar
-boolean isHidden(Point entry){ return true; }
+public boolean isHidden(String entry){ 
+        
+    try{
+            String targetPath = currentPath + "\\" + entry;
+            File file = new File(targetPath);
+            if(!file.exists())
+                System.out.println("Fisierul nu exista");
+            if(file.isHidden())   
+            {
+                System.out.println(entry + " este hidden");
+                return true;
+            }
+            else {
+                System.out.println(entry + " nu este hidden");
+                return false;
+            }
+        }
+    catch(Exception e){
+        return false;
+    }
+    
+    finally{
+       takePath();
+    }
+  
+}
 
 //returneaza true daca entry reprezinta un director si false in caz contrar
-boolean isDirectory(Point entry){ return true; }
+public boolean isDirectory(String entry){ 
+    
+    try{
+            String targetPath = currentPath + "\\" + entry;
+            File file = new File(targetPath);
+            if(!file.exists())
+                System.out.println("Fisierul nu exista");
+            if(file.isDirectory())   
+            {
+                System.out.println(entry + " este un director");
+                return true;
+            }
+            else {
+                System.out.println(entry + " nu este un director");
+                return false;
+            }
+        }
+    catch(Exception e){
+        return false;
+    }
+    
+    finally{
+       takePath();
+    }
+             
+}
 
 //returneaza true daca fisierul cu intrarea entry este criptat si false in caz contrar
-boolean isEncrypt(Point entry){ return true; }
+boolean isEncrypt(String entry){ return true; }
 
 //returneaza true daca entry reprezinta un fisier/director care a fost sters si false in caz contrar
-boolean isDelete(Point entry){ return true; }
+boolean isDelete(String entry){ return true; }
 
 //returneaza true daca entry reprezinta un fisier/director care a fost modificat si false in caz contrar
-boolean isModified(Point entry){ return true; }
+boolean isModified(String entry){ return true; }
 
 //returneaza intrarea cu numele name din directorul DirEntry (daca nu exista returneaza null)
 Point exists(Point DirEntry, String name){ return null; }
 
 //returneaza intrarea cu numele name din directorul directorul curent (daca nu exista returneaza null)
 Point exists(String path){ return null; }
-
-//returneaza true daca name reprezinta un director si false in caz contrar
-boolean isDirectory(String name){ return true; }
 
 //returneaza true daca path reprezinta un fisier deschis si false in caz contrar
 int isOpen(String path){ return 0; } 
