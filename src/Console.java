@@ -112,23 +112,23 @@ Console(){}
 
 /*
 shell este metoda ce asigura interactivitatea programului; trebuie sa implementeze comenzile: 
-new (creaza un nou sistem)                Facut
-load (incarca un sistem existent)         Facut
+new (creaza un nou sistem)                                  Facut
+load (incarca un sistem existent)                           Facut
 format (formateaza diskul)                
 save (salveaza diskul pe HDD)           
-shutdown (inchide sistemul)               Facut
-mkdir (creaza un director)                Facut
-mkfile (creaza si deschide un fisier)     Facut
+shutdown (inchide sistemul)                                 Facut
+mkdir (creaza un director)                                  Facut
+mkfile (creaza si deschide un fisier)                       Facut
 copy (copiaza un fisier/director la o cale indicata)
-delete (sterge un fisier sau director)    Facut
+delete (sterge un fisier sau director)                      Facut
 move (muta un fisier/director la o cale indicata) 
 rename (schimba numele unui fisier/director) 
-cd / chdir (schimba directorul curent)    Facut
-up (un director mai sus)                
+cd / chdir (schimba directorul curent)                      Facut
+up (un director mai sus)                                    Facut
 ls (listeaza continutul directorului curent; optiunea -a afiseaza si fisierele/directoarele ascunse, optiunea -l afiseaza in format lung
 ([atribute nume <DIR> dimensiune data timpul], <DIR> apare numai la directoare, data si timpul se refera la momentul 
 la care a fost creat sau modificat(dupa prima modificare)), -al (format lung in care sunt afisate si fisierele/directoarele 
-ascunse))
+ascunse))                                                   Facut
 attr (afiseaza si permite setarea atributelor fisierelor/directoarelor: Read-Only, Hidden, Encrypted)
 encrypt (cripteaza un fisier)
 decrypt (decripteaza un fisier criptat)
@@ -276,10 +276,49 @@ public void mkfile(String fileName){
 void copy(String frompath, String topath) throws PhileNotFoundException{}
 
 //deschide fisierul name in modul mode
-void openFile(String name, int mode){}
+void openFile(String entry, int mode){}
+
+// OVERLOAD OVERLOAD OVERLOAD :((((((((((((
+public void openFile(String entry){
+    try{
+            String targetPath = currentPath + "\\" + entry;
+            File file = new File(targetPath);
+            if(!file.exists()){
+               System.out.println("Fisierul nu exista");  
+               return;
+            }
+            Desktop dk=Desktop.getDesktop();
+            // Open a file
+            dk.open(file);
+    }
+    catch(Exception e)
+    {
+    }
+    finally{
+       takePath();
+    }
+}
 
 //deschide fereastra editorului pentru fisierul openPhilePath
-void edit(String openPhilePath) throws PhileNotOpenException{} 
+public void edit(String entry) throws PhileNotOpenException{
+    try{
+            String targetPath = currentPath + "\\" + entry;
+            File file = new File(targetPath);
+            if(!file.exists()){
+               System.out.println("Fisierul nu exista");  
+               return;
+            }
+            Desktop dk=Desktop.getDesktop();
+            // Open a file
+            dk.edit(file);
+    }
+    catch(Exception e)
+    {
+    }
+    finally{
+       takePath();
+    }
+} 
 
 //deschide fereastra editorului pentru fisierul openPhilePath, in modul view (poate fi doar citit)
 void view(String openPhilePath) throws PhileNotOpenException{} 
@@ -374,7 +413,7 @@ Free Bytes Count si Free Entries Count)
 void info(){}
 
 //scrie fisierul name de pe DISK pe HDD
-void saveFileOnHDD(String name) {}
+void saveFileOnHDD(String name ) {}
 
 //incarca un fisier de pe HDD in diskul virtual (foloseste un FileDialog)
 void loadFilefromHDD() throws DiskFullException{ }
