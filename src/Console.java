@@ -273,7 +273,22 @@ public void mkfile(String fileName){
  }
 
 //copiaza frompath la topath
-void copy(String frompath, String topath) throws PhileNotFoundException{}
+public void move(String frompath, String topath) throws PhileNotFoundException{
+
+    File from = new File(currentDiskPath + "\\" + frompath);
+    File to = new File(currentDiskPath + "\\" + topath);
+    
+    if(from.exists() && (to.isDirectory() || topath.indexOf("\\") < 0))
+    {
+       from.renameTo(to);
+    }
+    else
+    {
+        System.out.println("Nu exista calea indicata");
+    }    
+    takePath();
+}
+    
 
 //deschide fisierul name in modul mode
 void openFile(String entry, int mode){}
