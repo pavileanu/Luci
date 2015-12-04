@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.Date;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Console extends Frame implements FileSystem{
@@ -14,30 +15,13 @@ public class Console extends Frame implements FileSystem{
         
         static String currentDiskPath;
         static String currentPath = "$: ";
+        
+        public static ArrayList<Disk> disks;
+        public static Disk currentDisk;
 
         
 public static void addDiskRefernce(String output){
-    BufferedWriter  writer = null;
-    try {
-        //writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("log.txt")));
-        writer = new BufferedWriter(new FileWriter("disks.txt",true));
-        writer.write(output + "\n");
-    } catch (IOException ex) {
-        // report
-    } finally {
-        try {
-            writer.close();
-        } catch (Exception ex) {/*ignore*/
-            ex.printStackTrace();
-        }
-    }
 }
-
-public void abcd(String a, String b)
-{
-   System.out.println("test");
-}
-
 
 public static void runtimeCall(String command, Console c){
     try{
@@ -65,43 +49,12 @@ public static void runtimeCall(String command, Console c){
     }
 }
 
-public void takePath(){
-    System.out.print(currentPath+": ");
-}
+
 
 public static void main(String[]args){
-   
-    System.out.print(currentPath);
+
     Console c = new Console();
-    Scanner sc = new Scanner(System.in);
-    String input;
-    while(true){
-      input = sc.nextLine();
-      if(input.equals(""))
-        { 
-            c.takePath();
-            continue;  
-        }    
-      if(input.equals("exit"))
-        {
-          System.out.println("Consola a fost inchisa!"); 
-          break; 
-        }
-      runtimeCall(input, c);
-    }
-    
-    
-    
-    /*c.newDisk("Root3");
-    //c.allDisks();
-    c.load("Root2");
-    runtimeCall("chdir a", c);
-    
-    //c.chdir("a");
-    //c.chdir("adwa");
-    //c.mkdir("b");
-    //c.mkfile("fisier");
-    System.out.println(currentPath);*/
+    c.newDisk(1024, "Primul");
 }	
 
 //mesajele afisate la lansarea in executie a simulatorului
@@ -154,92 +107,36 @@ public void shell(){}
 //====================COMMANDS========================//]
 
 //creaza un nou disk si un nou sistem de fisiere pe acesta
-public void newDisk(String diskName){
-    try
-    {
-        File newDisk = new File(System.getProperty("user.dir").toString() + "/" + diskName);
-        if (newDisk.exists()) {
-            System.out.println("Unable to create " + newDisk.getAbsolutePath());
-        }
-        else {
-            newDisk.mkdirs();
-            System.out.println("New disk created:" + diskName);
-            addDiskRefernce(diskName);
-            currentDiskPath = System.getProperty("user.dir").toString() + "\\" + diskName;
-            currentPath = currentDiskPath;
-        }
-    }
-    finally{
-       takePath();
-    }
- }
+public void newDisk(int blockLength, String diskName){
+    Disk disk = new Disk(blockLength, diskName);
+    currentDisk = disk;
+    disks.add(disk);
+}
 
 public void allDisks(){
-    try{
-        System.out.println("Discurile existente in sistem:");
-        String line; 
-        int i=0;
-        BufferedReader br = new BufferedReader(new FileReader("disks.txt"));
-        while ((line = br.readLine()) != null) {
-            i++;
-            System.out.println("" + i + ":" + line);
-        }
-    }
-    catch(Exception e){
-    }
-    finally{
-       takePath();
-    }
 }
 
 //incarca un disk existent de pe HDD; trebuie folosit un obiect de tip FileDialog
 public void load(String diskName){
-    try{
-        String line; boolean ok=false;
-        BufferedReader br = new BufferedReader(new FileReader("disks.txt"));
-        while ((line = br.readLine()) != null) {
-            if(line.equals(diskName))
-                ok=true;
-        }
-        if(ok==true)
-        {   
-            System.out.println("Discul " + diskName + " a fost incarcat");
-            currentDiskPath = System.getProperty("user.dir").toString() + "\\" + diskName;
-            currentPath = currentDiskPath;
-        }
-        else System.out.println("Discul nu exista!");
-    }
-    catch(Exception e){
-    }
-    finally{
-       takePath();
-    }
+    for(Disk d : disks)
+        if(d.name.equals(diskName))
+            currentDisk = d;
 }
 
 //formateaza un disk
-public void format(DiskInterface disk){}
+public void format(DiskInterface disk){
+    disk.format();
+}
 
 //inchide sistemul de fisiere
 public void shutdown(){
-    System.out.println("Consola a fost inchisa!");
-    System.exit(0);
+    currentDisk = null;
 }
 
 public void mkdir(String newDirectoryName){
-    try
-    {
-        File newDirectory = new File(currentPath + "\\" + newDirectoryName);
-        if (newDirectory.exists()) {
-            System.out.println("Unable to create " + newDirectory.getAbsolutePath());
-        }
-        else {
-            newDirectory.mkdir();
-            System.out.println("Directory" + newDirectoryName + "created");
-        }
-    }
-    finally{
-       takePath();
-    }
+    int indexRoot = currentDisk.freeRootIndex();
+    int indexFat = currentDisk.freeFatIndex();
+    
 }
 
 /*
@@ -252,41 +149,10 @@ void save() {}
 
 //creaza si deschide fisierul cu numele specificat
 public void mkfile(String fileName){
-    try
-    {
-        File newFile = new File(currentPath + "\\" + fileName + ".txt");
-        if (newFile.exists()) {
-            System.out.println("Unable to create " + newFile.getAbsolutePath());
-        }
-        else {
-            newFile.createNewFile();
-            System.out.println("Directory" + fileName + "created");
-        }
-    }
-    catch(Exception e){
-        e.printStackTrace();
-    }
-    
-    finally{
-       takePath();
-    }
  }
 
 //copiaza frompath la topath
 public void move(String frompath, String topath) throws PhileNotFoundException{
-
-    File from = new File(currentDiskPath + "\\" + frompath);
-    File to = new File(currentDiskPath + "\\" + topath);
-    
-    if(from.exists() && (to.isDirectory() || topath.indexOf("\\") < 0))
-    {
-       from.renameTo(to);
-    }
-    else
-    {
-        System.out.println("Nu exista calea indicata");
-    }    
-    takePath();
 }
     
 
@@ -295,44 +161,10 @@ void openFile(String entry, int mode){}
 
 // OVERLOAD OVERLOAD OVERLOAD :((((((((((((
 public void openFile(String entry){
-    try{
-            String targetPath = currentPath + "\\" + entry;
-            File file = new File(targetPath);
-            if(!file.exists()){
-               System.out.println("Fisierul nu exista");  
-               return;
-            }
-            Desktop dk=Desktop.getDesktop();
-            // Open a file
-            dk.open(file);
-    }
-    catch(Exception e)
-    {
-    }
-    finally{
-       takePath();
-    }
 }
 
 //deschide fereastra editorului pentru fisierul openPhilePath
 public void edit(String entry) throws PhileNotOpenException{
-    try{
-            String targetPath = currentPath + "\\" + entry;
-            File file = new File(targetPath);
-            if(!file.exists()){
-               System.out.println("Fisierul nu exista");  
-               return;
-            }
-            Desktop dk=Desktop.getDesktop();
-            // Open a file
-            dk.edit(file);
-    }
-    catch(Exception e)
-    {
-    }
-    finally{
-       takePath();
-    }
 } 
 
 //deschide fereastra editorului pentru fisierul openPhilePath, in modul view (poate fi doar citit)
@@ -363,35 +195,10 @@ void df(){}
 
 //schimba directorul curent
 public void chdir(String path){
-    try{
-        File currentDirectory = new File(currentPath);
-        String[] allDirectories = currentDirectory.list();
-        boolean directoryExist = false;
-        for (String item : allDirectories) {
-            if(item.equals(path))
-            {
-                directoryExist = true;
-            }
-        }
-        if(directoryExist == true)
-            currentPath = currentPath + "\\" + path;
-        else
-            System.out.println("The directory doesn't exists");
-    }
-    finally{
-       takePath();
-    }
 }
 
 //navigam up cu un director
-public void up(){
-    // Nu putem face up din disk
-    if(currentPath.equals(currentDiskPath))    
-        return;
-    int lastIndex = currentPath.lastIndexOf("\\");
-    currentPath = currentPath.substring(0, lastIndex
-    );
-    takePath();    
+public void up(){   
 }
 
 
@@ -400,17 +207,6 @@ public void up(){
 public void ls(String param){} // JAVA NO IMPLICIT PARAMETERS COMMON
 
 public void ls(){   // OVERLOADING :((((
-    File folder = new File(currentPath);
-    File[] listOfFiles = folder.listFiles();
-
-        for (int i = 0; i < listOfFiles.length; i++) {
-          if (listOfFiles[i].isFile()) {
-            System.out.println("File: " + listOfFiles[i].getName());
-          } else if (listOfFiles[i].isDirectory()) {
-            System.out.println("Directory: " + listOfFiles[i].getName());
-          }
-    }
-    takePath();
 }
 
 //afiseaza/seteaza atributele unui fisier/director
@@ -437,86 +233,18 @@ void loadFilefromHDD() throws DiskFullException{ }
 
 //returneaza true daca fisierul/directorul cu intrarea entry este Read-Only si false in caz contrar
 public boolean isReadOnly(String entry){
-        
-    try{
-            String targetPath = currentPath + "\\" + entry;
-            File file = new File(targetPath);
-            if(!file.exists())
-               System.out.println("Fisierul nu exista");          
-            if(!file.canWrite())
-            {
-                System.out.println(entry + " este Read Only");
-                return true;
-            }
-            else {
-                System.out.println(entry + " nu este Read Only");
-                return false;
-            }
-        }
-    catch(Exception e){
-        return false;
-    }
-    
-    finally{
-       takePath();
-    }
-  
+    return true;
 }
 
 //returneaza true daca fisierul/directorul cu intrarea entry este Hidden si false in caz contrar
 public boolean isHidden(String entry){ 
-        
-    try{
-            String targetPath = currentPath + "\\" + entry;
-            File file = new File(targetPath);
-            if(!file.exists())
-                System.out.println("Fisierul nu exista");
-            if(file.isHidden())   
-            {
-                System.out.println(entry + " este hidden");
-                return true;
-            }
-            else {
-                System.out.println(entry + " nu este hidden");
-                return false;
-            }
-        }
-    catch(Exception e){
-        return false;
-    }
-    
-    finally{
-       takePath();
-    }
-  
+    return true;
+
 }
 
 //returneaza true daca entry reprezinta un director si false in caz contrar
-public boolean isDirectory(String entry){ 
-    
-    try{
-            String targetPath = currentPath + "\\" + entry;
-            File file = new File(targetPath);
-            if(!file.exists())
-                System.out.println("Fisierul nu exista");
-            if(file.isDirectory())   
-            {
-                System.out.println(entry + " este un director");
-                return true;
-            }
-            else {
-                System.out.println(entry + " nu este un director");
-                return false;
-            }
-        }
-    catch(Exception e){
-        return false;
-    }
-    
-    finally{
-       takePath();
-    }
-             
+public boolean isDirectory(String entry){
+    return true;
 }
 
 //returneaza true daca fisierul cu intrarea entry este criptat si false in caz contrar
