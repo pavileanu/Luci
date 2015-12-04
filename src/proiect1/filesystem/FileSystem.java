@@ -39,7 +39,7 @@ public interface FileSystem {
      * Sterge datele discului. Creaza un nou sistem de fisiere pe disc.
      * @param disk reprezinta discul ce va fi formatat.
      */
-    public void format(DiskInterface disk);
+    public void format();
     /**
      * Incarca un sistem de fisiere dintr-un disk dat
      * @param disk reprezinta discul ce urmeaza a fi incarcat

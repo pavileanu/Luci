@@ -5,6 +5,10 @@ import java.lang.reflect.Method;
 import java.util.Date;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.nio.file.FileSystemException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.Scanner;
 
 public class Console extends Frame implements FileSystem{
@@ -70,9 +74,10 @@ public void takePath(){
 }
 
 public static void main(String[]args){
-   
-    System.out.print(currentPath);
+    
     Console c = new Console();
+    c.copyright();
+    System.out.print(currentPath);
     Scanner sc = new Scanner(System.in);
     String input;
     while(true){
@@ -105,7 +110,12 @@ public static void main(String[]args){
 }	
 
 //mesajele afisate la lansarea in executie a simulatorului
-public void copyright(){}
+public void copyright(){
+    System.out.println("========================");
+    System.out.println("|Avadanii George Lucian|");
+    System.out.println("|      Grupa M531      |");
+    System.out.println("========================");
+}
 
 //constructor; trebuie sa permita lansarea comenzilor new (pentru un nou sistem) sau load (pentru incarcarea unui sistem existent pe HDD)		
 Console(){}
@@ -114,15 +124,15 @@ Console(){}
 shell este metoda ce asigura interactivitatea programului; trebuie sa implementeze comenzile: 
 new (creaza un nou sistem)                                  Facut
 load (incarca un sistem existent)                           Facut
-format (formateaza diskul)                
+format (formateaza diskul)                                  Facut
 save (salveaza diskul pe HDD)           
 shutdown (inchide sistemul)                                 Facut
 mkdir (creaza un director)                                  Facut
 mkfile (creaza si deschide un fisier)                       Facut
 copy (copiaza un fisier/director la o cale indicata)
 delete (sterge un fisier sau director)                      Facut
-move (muta un fisier/director la o cale indicata) 
-rename (schimba numele unui fisier/director) 
+move (muta un fisier/director la o cale indicata)           Facut  
+rename (schimba numele unui fisier/director)                Facut
 cd / chdir (schimba directorul curent)                      Facut
 up (un director mai sus)                                    Facut
 ls (listeaza continutul directorului curent; optiunea -a afiseaza si fisierele/directoarele ascunse, optiunea -l afiseaza in format lung
@@ -132,8 +142,8 @@ ascunse))                                                   Facut
 attr (afiseaza si permite setarea atributelor fisierelor/directoarelor: Read-Only, Hidden, Encrypted)
 encrypt (cripteaza un fisier)
 decrypt (decripteaza un fisier criptat)
-open (deschide un fisier)
-edit (editeaza un fisier deschis in modul Read-Write)
+open (deschide un fisier)                                   Facut   
+edit (editeaza un fisier deschis in modul Read-Write)       Facut
 view (afiseaza continutul unui fisier deschis in modul Read-Only)
 close x (inchide fisierul cu calea x)
 close (inchide toate fisierele deschise)
@@ -217,7 +227,17 @@ public void load(String diskName){
 }
 
 //formateaza un disk
-public void format(DiskInterface disk){}
+public void format(){
+    
+    File root = new File(currentDiskPath);
+    File[] listOfFiles = root.listFiles();
+    
+        for (int i = 0; i < listOfFiles.length; i++) {
+            delete(listOfFiles[i]);
+        }
+    System.out.println("Format succesfull!");
+    takePath();
+}
 
 //inchide sistemul de fisiere
 public void shutdown(){
@@ -288,7 +308,23 @@ public void move(String frompath, String topath) throws PhileNotFoundException{
     }    
     takePath();
 }
-    
+
+public void copy(String frompath, String topath) throws IOException{
+    String from = currentDiskPath + "\\" + frompath;
+    String to = currentDiskPath + "\\" + topath;
+    Files.copy(Paths.get(frompath), Paths.get(topath), REPLACE_EXISTING);
+}
+
+
+public void rename(String frompath, String topath) throws PhileNotFoundException, FileSystemException {
+    File oldname = new File(currentPath + "\\" + frompath);
+    boolean newname = oldname.renameTo(new File(currentPath + "\\" + topath));
+    if (!newname) {
+        throw new FileSystemException(currentPath + "\\" + topath);
+    }
+    takePath();
+}
+	
 
 //deschide fisierul name in modul mode
 void openFile(String entry, int mode){}
@@ -352,7 +388,27 @@ void closeAll(){}
 
 //sterge un fisier/director cu numele name
 public void delete(String name) throws PhileNotFoundException{
-        
+    File targetFile = new File(currentPath + "\\" + name);
+    if(targetFile.exists())
+        delete(targetFile);
+    takePath();
+}
+
+public static void delete(File file) {
+    if(file.isFile())
+        file.delete();
+
+    File[] files = file.listFiles();
+    if(files!=null) { //some JVMs return null for empty dirs
+        for(File f: files) {
+            if(f.isDirectory()) {
+                delete(f);
+            } else {
+                f.delete();
+            }
+        }
+    }
+    file.delete();
 }
 
 //sterge continutul tuturor blocurilor din zona de date, care in FAT figureaza ca fiind sterse
@@ -417,7 +473,21 @@ public void ls(){   // OVERLOADING :((((
 void attr(String name){}
 
 //afiseaza lista comenzilor
-void help(){}
+public void help(){
+          System.out.println("==============COMMANDS LIST=============="); 
+          System.out.println("newDisk  --->NEW DISK                    "); 
+	  System.out.println("allDisks --->EXISTENT DISKS ON THE SYSTEM");
+          System.out.println("load     --->LOAD A DISK                 ");
+          System.out.println("shutdown --->SHUT DOWN SYSTEM            ");
+          System.out.println("mkdir    --->CREATE A NEW DIRECTORY      ");
+          System.out.println("mkfile   --->CREATE A NEW FILE           "); 
+          System.out.println("chdir    --->CHANGE DIRECTORY            "); 
+          System.out.println("help     --->HELP INFORMATIONS           ");
+          System.out.println("move     --->move x to y directory       ");	
+          System.out.println("ls       --->List the current directory  ");
+          System.out.println("up       --->Up one level                ");
+          takePath();
+}
 
 /*
 afiseaza informatii despre disk (Disk label, Bytes per Sector, Sectors per Block [Cluter], Number of Blocks,
