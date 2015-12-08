@@ -7,6 +7,7 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.Scanner;
@@ -36,12 +37,6 @@ public static void addDiskRefernce(String output){
         }
     }
 }
-
-public void abcd(String a, String b)
-{
-   System.out.println("test");
-}
-
 
 public static void runtimeCall(String command, Console c){
     try{
@@ -94,19 +89,7 @@ public static void main(String[]args){
         }
       runtimeCall(input, c);
     }
-    
-    
-    
-    /*c.newDisk("Root3");
-    //c.allDisks();
-    c.load("Root2");
-    runtimeCall("chdir a", c);
-    
-    //c.chdir("a");
-    //c.chdir("adwa");
-    //c.mkdir("b");
-    //c.mkfile("fisier");
-    System.out.println(currentPath);*/
+
 }	
 
 //mesajele afisate la lansarea in executie a simulatorului
@@ -310,9 +293,18 @@ public void move(String frompath, String topath) throws PhileNotFoundException{
 }
 
 public void copy(String frompath, String topath) throws IOException{
-    String from = currentDiskPath + "\\" + frompath;
-    String to = currentDiskPath + "\\" + topath;
-    Files.copy(Paths.get(frompath), Paths.get(topath), REPLACE_EXISTING);
+    String from = new File(currentDiskPath + "\\" + frompath).getAbsolutePath();
+    String fileName = from.substring(from.lastIndexOf("\\"),from.length());
+    String to = new File(currentDiskPath + "\\" + topath + "\\" + fileName).getAbsolutePath();
+
+    if( !(new File(currentDiskPath + "\\" + topath)).isDirectory() || !(new File(from).exists())  )
+    {
+        System.out.println("Unul din fisiere este inexistent");
+        takePath();
+        return;
+    }
+    Files.copy(Paths.get(from), Paths.get(to), REPLACE_EXISTING);
+    takePath();
 }
 
 
