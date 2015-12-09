@@ -257,13 +257,14 @@ void save() {}
 public void mkfile(String fileName){
     try
     {
-        File newFile = new File(currentPath + "\\" + fileName + ".txt");
+        File newFile = new File(currentPath + "\\" + fileName);
         if (newFile.exists()) {
             System.out.println("Unable to create " + newFile.getAbsolutePath());
         }
         else {
             newFile.createNewFile();
             System.out.println("Directory" + fileName + "created");
+            openFile(fileName);
         }
     }
     catch(Exception e){
@@ -279,15 +280,19 @@ public void mkfile(String fileName){
 public void move(String frompath, String topath) throws PhileNotFoundException{
 
     File from = new File(currentDiskPath + "\\" + frompath);
-    File to = new File(currentDiskPath + "\\" + topath);
     
-    if(from.exists() && (to.isDirectory() || topath.indexOf("\\") < 0))
+    String fullFromPath = from.getAbsolutePath();
+    String fileName = fullFromPath.substring(fullFromPath.lastIndexOf("\\"),fullFromPath.length()); 
+
+    File to = new File(currentDiskPath + "\\" + topath + fileName);
+    
+    if(from.exists() && to.getParentFile().isDirectory())
     {
        from.renameTo(to);
     }
     else
     {
-        System.out.println("Nu exista calea indicata");
+       System.out.println("Nu exista calea indicata");
     }    
     takePath();
 }
